@@ -19,6 +19,9 @@
       .qcw-trigger-btn {
         display: none !important;
       }
+      iframe#qcw-iframe {
+        max-width: calc(100vw - 48px);
+      }
 
       /* ============ TOGGLE BUTTON ============ */
       #ccm-toggle {
@@ -440,6 +443,9 @@
         );
       }
 
+      var qismoProductCardWidth = 280;
+      var qismoProductImageHeight = 190;
+
       var qismoWidgetCustomCSS = `
           .qcw-header { background: #111827 !important; color: #fff !important; }
 
@@ -509,15 +515,114 @@
           div[class*="comment__card"] {
             background-color: #ffffff !important;
             background: #ffffff !important;
+            padding-bottom: 10px !important;
           }
 
           .comment__card--container {
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
             border: 1px solid #eef0f3 !important;
+          }
+
+          /* Ukuran card produk di dalam bubble/carousel chat */
+          .comment__carousel .slick-slide,
+          .comment__card,
+          .comment__card--wrapper,
+          .comment__card--container,
+          div[class*="comment__card--wrapper"],
+          div[class*="comment__card--container"] {
+            width: ${qismoProductCardWidth}px !important;
+            min-width: ${qismoProductCardWidth}px !important;
+            max-width: ${qismoProductCardWidth}px !important;
+          }
+
+          .comment__card--image,
+          .comment__card--img,
+          .comment__card-image,
+          div[class*="comment__card"] img {
+            width: 100% !important;
+            height: ${qismoProductImageHeight}px !important;
+            max-height: ${qismoProductImageHeight}px !important;
+            object-fit: contain !important;
+          }
+
+          .comment__card--title,
+          .comment__card-title,
+          div[class*="comment__card"][class*="title"] {
+            font-size: 14px !important;
+            line-height: 1.4 !important;
+          }
+
+          .comment__card--description,
+          .comment__card-description,
+          div[class*="comment__card"][class*="description"] {
+            font-size: 13px !important;
+            line-height: 1.55 !important;
+          }
+
+          /* Panah kanan-kiri carousel mengikuti ukuran card yang diperbesar */
+          .comment__carousel .slick-arrow,
+          .carousel-container .slick-arrow,
+          .slick-prev,
+          .slick-next,
+          button[class*="slick-prev"],
+          button[class*="slick-next"],
+          button[class*="carousel"][class*="prev"],
+          button[class*="carousel"][class*="next"] {
+            width: 44px !important;
+            height: 44px !important;
+            min-width: 44px !important;
+            min-height: 44px !important;
+            border-radius: 50% !important;
+            background: #ffffff !important;
+            box-shadow: 0 8px 24px rgba(17, 24, 39, 0.16) !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            top: calc(${qismoProductImageHeight}px / 2) !important;
+            transform: translateY(-50%) !important;
+            z-index: 5 !important;
+          }
+
+          .comment__carousel .slick-prev,
+          .carousel-container .slick-prev,
+          button[class*="slick-prev"],
+          button[class*="carousel"][class*="prev"] {
+            left: 8px !important;
+          }
+
+          .comment__carousel .slick-next,
+          .carousel-container .slick-next,
+          button[class*="slick-next"],
+          button[class*="carousel"][class*="next"] {
+            right: 8px !important;
+          }
+
+          .comment__carousel .slick-arrow:before,
+          .carousel-container .slick-arrow:before,
+          .slick-prev:before,
+          .slick-next:before {
+            color: #111827 !important;
+            font-size: 24px !important;
+            line-height: 1 !important;
+            opacity: 1 !important;
+          }
+
+          @media (max-width: 399px) {
+            .comment__carousel .slick-arrow,
+            .carousel-container .slick-arrow,
+            .slick-prev,
+            .slick-next {
+              width: 38px !important;
+              height: 38px !important;
+              min-width: 38px !important;
+              min-height: 38px !important;
+            }
           }
         `;
 
       window.qismoWidgetCustomCSS = qismoWidgetCustomCSS;
+      var qismoWidgetDesktopSizes = [520, 580];
+
       window.attachQismoWidgetCustomCSS = function (attempt) {
         attempt = attempt || 0;
 
@@ -541,6 +646,7 @@
         options: {
           channel_id: 134701,
           mobileBreakPoint: 400,
+          widgetDesktopSizes: qismoWidgetDesktopSizes,
           baseUrl: "https://omnichannel.qiscus.com",
           qismoIframeUrl: "https://omnichannel.qiscus.com",
           extra_fields: JSON.stringify([
