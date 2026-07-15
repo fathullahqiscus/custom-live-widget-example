@@ -111,9 +111,53 @@ var QISCUS_OPTIONS = {
   ],
 };
 
+// ── Login screen (pre-chat form) customization ─────────────
+// Workaround custom-CSS untuk request client Phillip Sekuritas / POEMS
+// (Slack thread 2026-07-03, cc Kintan):
+//   1. Warna teks judul & warna tombol diatur terpisah (defaultnya
+//      keduanya ikut satu setting "color_widget" di dashboard, makanya
+//      perlu di-override manual via CSS).
+//   2. Batas karakter judul header (20 → 35) — ini setting/validasi di
+//      dashboard Omnichannel (form_greet/form_second_greet), BUKAN
+//      sesuatu yang bisa diubah lewat custom CSS. CSS di bawah hanya
+//      memastikan teks yang lebih panjang tetap wrap rapi, tidak
+//      terpotong/overflow.
+//   3. Banner/gambar di area header, menggantikan teks judul — isi
+//      `bannerImageUrl` untuk mengaktifkan. Rekomendasi aset: rasio
+//      2.5:1 (mis. 600x240px), format PNG/JPG, maks ±200KB, biar tetap
+//      proporsional di lebar widget (~360px) tanpa pecah.
+var LOGIN_HEADER = {
+  titleColor: "#000000",
+  buttonColor: "#0043CE",
+  bannerImageUrl: "", // isi URL gambar untuk mode banner (poin 3)
+  bannerAspectRatio: "2.5 / 1",
+};
+
 // ── Custom CSS for Qiscus iframe ───────────────────────────
 var WIDGET_CUSTOM_CSS =
   ".qcw-header { background: #111827 !important; color: #fff !important; }" +
+  /* Login form (pre-chat) — pisahkan warna teks judul & tombol */
+  " .qismo-login-form__header," +
+  " .qismo-login-form__header h3" +
+  " { color: " + LOGIN_HEADER.titleColor + " !important; }" +
+  /* Judul tetap rapi walau teksnya lebih panjang dari default 20 char */
+  " .qismo-login-form__header," +
+  " .qismo-login-form__header h3" +
+  " { white-space: normal !important; overflow-wrap: break-word !important; word-break: break-word !important; }" +
+  " .qcw-cs-submit-form.qismo-login-btn" +
+  " { background-color: " + LOGIN_HEADER.buttonColor + " !important; }" +
+  (LOGIN_HEADER.bannerImageUrl
+    ? /* Mode banner: sembunyikan teks judul & logo default, tampilkan gambar */
+      " .qismo-login-form__header { display: none !important; }" +
+      " .qcw-login-avatar { width: 100% !important; height: auto !important;" +
+      "   margin: 0 !important; display: block !important; }" +
+      " .qcw-login-avatar img { display: none !important; }" +
+      " .qcw-login-avatar::after { content: \"\"; display: block; width: 100%;" +
+      "   aspect-ratio: " + LOGIN_HEADER.bannerAspectRatio + ";" +
+      "   background-image: url('" + LOGIN_HEADER.bannerImageUrl + "');" +
+      "   background-size: cover !important; background-position: center !important;" +
+      "   border-radius: 12px !important; }"
+    : "") +
   /* Background wrapper — putih */
   " .qcw-chat," +
   " .qcw-body," +
