@@ -80,6 +80,13 @@ var PRODUCT_CARD = {
 
 var WIDGET_DESKTOP_SIZES = [520, 580];
 
+// ── Bypass-login toggle ──────────────────────────────────────
+// true  = skip form login, langsung masuk ke chat (pakai DEFAULT_USER)
+// false = tampilkan form login Qiscus dulu sebelum chat
+// Case Phillip Sekuritas Indonesia butuh form login tetap tampil
+// (requestnya soal customisasi header di form login itu sendiri).
+var ENABLE_LOGIN_BYPASS = false;
+
 // ── Default user for bypass-login ──────────────────────────
 // GANTI secara DINAMIS dari data user Anda di production.
 var DEFAULT_USER = {
