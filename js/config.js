@@ -102,13 +102,13 @@ var QISCUS_OPTIONS = {
   widgetDesktopSizes: WIDGET_DESKTOP_SIZES,
   baseUrl: "https://omnichannel.qiscus.com",
   qismoIframeUrl: "https://omnichannel.qiscus.com",
-  extra_fields: JSON.stringify([
+  extra_fields: [
     {
       name: "company",
       placeholder: "Type your company name",
       visible: true,
     },
-  ]),
+  ],
 };
 
 // ── Custom CSS for Qiscus iframe ───────────────────────────
