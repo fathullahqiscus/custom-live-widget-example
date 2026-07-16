@@ -3,7 +3,7 @@
  * ============
  * Logika halaman showcase: render kartu case per kategori (dari
  * js/cases.js), handle klik → update panel deskripsi + reload
- * iframe preview (index.html?case=<id>) supaya widget Qiscus asli
+ * iframe preview (widget/?case=<id>) supaya widget Qiscus asli
  * benar-benar reinit dengan config case yang dipilih.
  * Bergantung pada js/cases.js (harus di-load duluan).
  */
@@ -85,7 +85,7 @@
   // ── Iframe preview ───────────────────────────────────────
   function loadPreview(caseId) {
     dom.overlay.classList.add("is-visible");
-    dom.iframe.src = "index.html?case=" + encodeURIComponent(caseId);
+    dom.iframe.src = "widget/?case=" + encodeURIComponent(caseId);
   }
 
   // ── Selection + URL sync ─────────────────────────────────
