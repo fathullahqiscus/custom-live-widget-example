@@ -1,4 +1,4 @@
-# Demo Melawai — Qiscus Widget Customization Showcase
+# Live Custom Widget — Qiscus Widget Customization Showcase
 
 Static site berisi dua bagian:
 
