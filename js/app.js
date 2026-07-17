@@ -121,14 +121,13 @@
     // Qiscus merender beberapa iframe terpisah tergantung tahap alur
     // chat: bubble teaser (qcw-welcome-iframe), form login pre-chat
     // (qcw-login-form-iframe), dan room chat setelah login (qcw-iframe).
-    // Custom CSS harus dikirim ke SEMUA yang ada, bukan cuma qcw-iframe,
-    // supaya kustomisasi header form login (warna judul/tombol, banner)
-    // benar-benar ke-apply.
-    CUSTOM_CSS_TARGET_IFRAME_IDS: [
-      "qcw-iframe",
-      "qcw-login-form-iframe",
-      "qcw-welcome-iframe",
-    ],
+    // Custom CSS dikirim ke qcw-iframe & qcw-login-form-iframe supaya
+    // kustomisasi header form login (warna judul/tombol, banner) benar-
+    // benar ke-apply. qcw-welcome-iframe SENGAJA tidak disertakan: ia
+    // punya header default sendiri yang sudah kontras (putih/navy) dan
+    // custom CSS header chat-room kita (gelap) malah bikin teksnya
+    // ketimpa jadi gelap-di-atas-gelap kalau ikut dikirim ke situ.
+    CUSTOM_CSS_TARGET_IFRAME_IDS: ["qcw-iframe", "qcw-login-form-iframe"],
 
     postCustomCSSTo: function (iframe) {
       if (iframe && iframe.contentWindow) {
@@ -197,22 +196,18 @@
     },
 
     /**
-     * Buka live chat: close menu → klik trigger Qiscus.
+     * Buka live chat: close menu, lalu tampilkan teaser Qiscus
+     * (qcw-welcome-iframe) supaya user bisa klik tombol asli "Ask for
+     * Questions" di dalamnya — itu satu-satunya yang benar-benar
+     * membuka form login (mengklik .qcw-trigger-btn TIDAK membuka
+     * apa-apa, sudah diverifikasi; trigger button itu cuma berguna
+     * untuk minimize/maximize chat room yang SUDAH terbuka, lihat
+     * PanelController.toggle di atas).
      */
     openChat: function () {
       state.hasActivatedChat = true;
       PanelController.close();
-
-      var btn = document.querySelector(".qcw-trigger-btn");
-      if (btn) {
-        btn.click();
-      } else {
-        console.warn("[Qiscus] trigger button belum siap, retry...");
-        setTimeout(function () {
-          var b = document.querySelector(".qcw-trigger-btn");
-          if (b) b.click();
-        }, 800);
-      }
+      document.body.classList.add("ccm-chat-active");
     },
 
     /**

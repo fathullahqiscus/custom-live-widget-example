@@ -109,6 +109,12 @@ var QISCUS_OPTIONS = {
   widgetDesktopSizes: WIDGET_DESKTOP_SIZES,
   baseUrl: "https://omnichannel.qiscus.com",
   qismoIframeUrl: "https://omnichannel.qiscus.com",
+  // Matikan auto-popup bawaan Qiscus (muncul sendiri 3 detik setelah
+  // load). Teaser (dengan tombol "Ask for Questions" yang benar-benar
+  // membuka form login) tetap ada, tapi kita yang kontrol kapan
+  // muncul: hanya saat user klik "Live chat" di panel custom
+  // (lihat QiscusLoader.openChat di js/app.js).
+  welcomeMessageStatus: false,
   extra_fields: [
     {
       name: "company",
