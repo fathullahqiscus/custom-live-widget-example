@@ -184,15 +184,18 @@ iframe#qcw-iframe {
 }
 
 .ccm-text .ccm-title {
+  display: block;
   font-weight: 600;
   font-size: 15.5px;
   color: var(--text);
 }
 
 .ccm-text .ccm-sub {
+  display: block;
   font-size: 13px;
   color: var(--muted);
-  margin-top: 1px;
+  margin-top: 2px;
+  line-height: 1.35;
 }
 
 .ccm-chevron {
