@@ -1,16 +1,21 @@
 {
   "name": "demo-melawai",
   "version": "1.0.0",
-  "description": "Qiscus custom channel menu widget — Demo Melawai",
+  "description": "Qiscus Omnichannel custom channel menu widget + customization showcase dashboard — Demo Melawai",
+  "private": true,
   "main": "index.html",
   "scripts": {
-    "start": "serve"
+    "clean": "lsof -ti tcp:3000 | xargs kill -9 2>/dev/null || true",
+    "prestart": "npm run clean",
+    "start": "serve -n -c serve.json -l 3000"
   },
   "keywords": [
     "html",
-    "css"
+    "css",
+    "qiscus",
+    "widget"
   ],
-  "author": "Ives van Hoorne",
+  "author": "Qiscus",
   "license": "MIT",
   "devDependencies": {
     "serve": "11.2.0"
