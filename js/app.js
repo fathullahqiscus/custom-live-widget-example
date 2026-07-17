@@ -99,45 +99,56 @@
   };
 
   // ── AppIdGate ────────────────────────────────────────────
-  // App ID Qiscus tidak di-hardcode di config.js — diminta dari user
-  // yang memakai widget ini lewat popup saat pertama kali dibuka, lalu
-  // disimpan di localStorage supaya kunjungan berikutnya langsung load.
+  // App ID & Channel ID Qiscus tidak di-hardcode di config.js — diminta
+  // dari user yang memakai widget ini lewat popup saat pertama kali
+  // dibuka, lalu disimpan di localStorage supaya kunjungan berikutnya
+  // langsung load.
   var AppIdGate = {
-    STORAGE_KEY: "ccm-qiscus-app-id",
+    APP_ID_KEY: "ccm-qiscus-app-id",
+    CHANNEL_ID_KEY: "ccm-qiscus-channel-id",
 
     get: function () {
-      return localStorage.getItem(AppIdGate.STORAGE_KEY) || "";
+      return {
+        appId: localStorage.getItem(AppIdGate.APP_ID_KEY) || "",
+        channelId: localStorage.getItem(AppIdGate.CHANNEL_ID_KEY) || "",
+      };
     },
 
-    save: function (appId) {
-      localStorage.setItem(AppIdGate.STORAGE_KEY, appId);
+    save: function (appId, channelId) {
+      localStorage.setItem(AppIdGate.APP_ID_KEY, appId);
+      localStorage.setItem(AppIdGate.CHANNEL_ID_KEY, channelId);
     },
 
     clear: function () {
-      localStorage.removeItem(AppIdGate.STORAGE_KEY);
+      localStorage.removeItem(AppIdGate.APP_ID_KEY);
+      localStorage.removeItem(AppIdGate.CHANNEL_ID_KEY);
     },
 
     prompt: function (onReady) {
       var overlay = document.getElementById("ccm-appid-modal");
       var form = document.getElementById("ccm-appid-form");
-      var input = document.getElementById("ccm-appid-input");
+      var appIdInput = document.getElementById("ccm-appid-input");
+      var channelIdInput = document.getElementById("ccm-channelid-input");
+      var existing = AppIdGate.get();
 
       overlay.classList.add("open");
-      input.value = AppIdGate.get();
+      appIdInput.value = existing.appId;
+      channelIdInput.value = existing.channelId;
 
       form.addEventListener("submit", function handler(e) {
         e.preventDefault();
-        var value = input.value.trim();
-        if (!value) return;
+        var appId = appIdInput.value.trim();
+        var channelId = channelIdInput.value.trim();
+        if (!appId || !channelId) return;
 
-        AppIdGate.save(value);
+        AppIdGate.save(appId, channelId);
         overlay.classList.remove("open");
         form.removeEventListener("submit", handler);
-        onReady(value);
+        onReady(appId, channelId);
       });
 
       setTimeout(function () {
-        input.focus();
+        appIdInput.focus();
       }, 50);
     },
   };
@@ -279,11 +290,12 @@
     },
 
     /**
-     * Load Qiscus SDK script dan inisialisasi widget dengan App ID
-     * yang diberikan (dari AppIdGate — localStorage atau popup).
+     * Load Qiscus SDK script dan inisialisasi widget dengan App ID +
+     * Channel ID yang diberikan (dari AppIdGate — localStorage atau popup).
      */
-    loadScript: function (appId) {
+    loadScript: function (appId, channelId) {
       var options = Object.assign({}, QISCUS_OPTIONS, {
+        channel_id: channelId,
         widgetCustomCSS: WIDGET_CUSTOM_CSS,
       });
 
@@ -339,17 +351,17 @@
     PanelController.bindEvents();
     ErrorScreen.bindEvents();
 
-    // Setup Qiscus, lalu load — App ID diambil dari localStorage kalau
-    // sudah pernah diisi, atau diminta dulu lewat popup.
+    // Setup Qiscus, lalu load — App ID & Channel ID diambil dari
+    // localStorage kalau sudah pernah diisi, atau diminta dulu lewat popup.
     QiscusLoader.setBypassLogin();
     QiscusLoader.observeNewIframes();
 
-    var existingAppId = AppIdGate.get();
-    if (existingAppId) {
-      QiscusLoader.loadScript(existingAppId);
+    var existing = AppIdGate.get();
+    if (existing.appId && existing.channelId) {
+      QiscusLoader.loadScript(existing.appId, existing.channelId);
     } else {
-      AppIdGate.prompt(function (appId) {
-        QiscusLoader.loadScript(appId);
+      AppIdGate.prompt(function (appId, channelId) {
+        QiscusLoader.loadScript(appId, channelId);
       });
     }
   }

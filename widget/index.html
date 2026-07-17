@@ -70,14 +70,23 @@
         </div>
         <div class="ccm-modal-body">
           <p>
-            Widget ini butuh App ID Qiscus Omnichannel Anda supaya bisa
-            terhubung ke live chat.
+            Widget ini butuh App ID dan Channel ID Qiscus Omnichannel Anda
+            supaya bisa terhubung ke live chat.
           </p>
           <form id="ccm-appid-form">
+            <label class="ccm-modal-label" for="ccm-appid-input">App ID</label>
             <input
               type="text"
               id="ccm-appid-input"
               placeholder="mis. abcde-xxxxxxxxxxx"
+              autocomplete="off"
+              required
+            />
+            <label class="ccm-modal-label" for="ccm-channelid-input">Channel ID</label>
+            <input
+              type="text"
+              id="ccm-channelid-input"
+              placeholder="mis. 134701"
               autocomplete="off"
               required
             />

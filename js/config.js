@@ -105,8 +105,10 @@ var DEFAULT_USER = {
 };
 
 // ── Qiscus channel & extra fields ──────────────────────────
+// channel_id TIDAK di-hardcode di sini — sama seperti App ID, diminta
+// dari user lewat popup pertama kali (lihat AppIdGate di js/app.js) dan
+// di-inject ke options ini saat QiscusLoader.loadScript() dipanggil.
 var QISCUS_OPTIONS = {
-  channel_id: 134701,
   mobileBreakPoint: 400,
   widgetDesktopSizes: WIDGET_DESKTOP_SIZES,
   baseUrl: "https://omnichannel.qiscus.com",
