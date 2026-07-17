@@ -1,4 +1,4 @@
-# Project instructions
+# Agent instructions
 
 ## About this project
 
