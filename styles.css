@@ -3,13 +3,19 @@
    ============================================================ */
 
 /* ========== Variables ========== */
+/* Palet & font mengikuti identitas visual qiscus.com (navy #01416c,
+   accent blue #2f80ed, font Inter/Plus Jakarta Sans — diambil dari
+   CSS resmi qiscus.com/v5/css/app.css). */
 :root {
-  --accent: #111827;
-  --accent-soft: #f3f4f6;
-  --text: #111827;
-  --muted: #6b7280;
-  --line: #eef0f3;
+  --accent: #01416c;
+  --accent-bright: #2f80ed;
+  --accent-soft: #eff7fc;
+  --text: #14181f;
+  --muted: #5b667e;
+  --line: #dfe8f1;
   --radius: 16px;
+  --font-body: "Inter", -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-heading: "Plus Jakarta Sans", var(--font-body);
 }
 
 /* ========== Qiscus Default UI Override ========== */
@@ -18,13 +24,19 @@
 }
 
 /* Bubble teaser bawaan Qiscus ("Hello There, Welcome to Qiscus!") —
-   disembunyikan karena sudah digantikan oleh toggle + panel custom
-   (#ccm-toggle / #ccm-panel). Tanpa ini, teaser-nya tetap auto-muncul,
-   bentrok posisi (fixed bottom-right, sama seperti panel kita) dan
-   ikut ketiban custom CSS header chat room (jadi gelap & teks susah
-   dibaca) karena Qiscus reuse class yang sama di teaser ini. */
+   disembunyikan secara default (digantikan tampilannya oleh toggle +
+   panel custom, #ccm-toggle / #ccm-panel) TAPI di-reveal lagi begitu
+   user benar-benar klik "Live chat" (QiscusLoader.openChat() di
+   js/app.js menambahkan class "ccm-chat-active" ke <body>). Teaser
+   ini satu-satunya tempat tombol asli "Ask for Questions" yang
+   membuka form login Qiscus — kalau disembunyikan permanen, tidak ada
+   jalan sama sekali untuk membuka chat. */
 iframe#qcw-welcome-iframe {
   display: none !important;
+}
+
+body.ccm-chat-active iframe#qcw-welcome-iframe {
+  display: block !important;
 }
 
 iframe#qcw-iframe {
@@ -47,15 +59,15 @@ iframe#qcw-iframe {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 30px rgba(17, 24, 39, 0.28);
+  box-shadow: 0 10px 30px rgba(1, 65, 108, 0.28);
   z-index: 999999999 !important;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
-  font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: var(--font-body);
 }
 
 #ccm-toggle:hover {
   transform: translateY(-2px);
-  box-shadow: 0 14px 36px rgba(17, 24, 39, 0.34);
+  box-shadow: 0 14px 36px rgba(1, 65, 108, 0.34);
 }
 
 #ccm-toggle svg {
@@ -71,14 +83,14 @@ iframe#qcw-iframe {
   max-width: calc(100vw - 48px);
   background: #fff;
   border-radius: var(--radius);
-  box-shadow: 0 20px 60px rgba(17, 24, 39, 0.22);
+  box-shadow: 0 20px 60px rgba(1, 65, 108, 0.22);
   z-index: 100000;
   overflow: hidden;
   opacity: 0;
   transform: translateY(12px) scale(0.98);
   pointer-events: none;
   transition: opacity 0.18s ease, transform 0.18s ease;
-  font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-family: var(--font-body);
 }
 
 #ccm-panel.open {
@@ -103,6 +115,7 @@ iframe#qcw-iframe {
 
 .ccm-header h2 {
   margin: 0;
+  font-family: var(--font-heading);
   font-size: 21px;
   font-weight: 700;
   line-height: 1.3;
