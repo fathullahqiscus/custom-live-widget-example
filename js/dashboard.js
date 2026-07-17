@@ -19,6 +19,8 @@
   };
 
   var activeCaseId = "default";
+  var previewTimeoutId = null;
+  var PREVIEW_TIMEOUT_MS = 8000;
 
   // ── Render ───────────────────────────────────────────────
   function renderPicker() {
@@ -83,8 +85,23 @@
   }
 
   // ── Iframe preview ───────────────────────────────────────
+  function hideOverlay() {
+    dom.overlay.classList.remove("is-visible");
+    if (previewTimeoutId) {
+      clearTimeout(previewTimeoutId);
+      previewTimeoutId = null;
+    }
+  }
+
   function loadPreview(caseId) {
     dom.overlay.classList.add("is-visible");
+    if (previewTimeoutId) {
+      clearTimeout(previewTimeoutId);
+    }
+    // Fallback: kalau event "load" iframe tidak pernah nyala (koneksi
+    // lambat/putus ke omnichannel.qiscus.com, resource diblok, dll),
+    // overlay jangan sampai muter tanpa henti — paksa hilang.
+    previewTimeoutId = setTimeout(hideOverlay, PREVIEW_TIMEOUT_MS);
     dom.iframe.src = "widget/?case=" + encodeURIComponent(caseId);
   }
 
@@ -110,9 +127,7 @@
     dom.iframe = document.getElementById("dash-preview-iframe");
     dom.overlay = document.getElementById("dash-preview-overlay");
 
-    dom.iframe.addEventListener("load", function () {
-      dom.overlay.classList.remove("is-visible");
-    });
+    dom.iframe.addEventListener("load", hideOverlay);
 
     renderPicker();
 
