@@ -11,8 +11,59 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../styles.css" />
+    <!-- Inline & tidak bergantung ../styles.css atau font eksternal, supaya
+         langsung tampil walau koneksi lambat — mencegah halaman kosong
+         (putih polos) sebelum tombol live muncul. Disembunyikan oleh
+         app.js begitu inisialisasi selesai (lihat body.ccm-ready). -->
+    <style>
+      #ccm-toggle {
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+      body.ccm-ready #ccm-toggle {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      #ccm-loading {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: #01416c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 10px 30px rgba(1, 65, 108, 0.28);
+        z-index: 999999999;
+      }
+      body.ccm-ready #ccm-loading {
+        display: none;
+      }
+      #ccm-loading::after {
+        content: "";
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2.5px solid rgba(255, 255, 255, 0.35);
+        border-top-color: #fff;
+        animation: ccm-spin 0.8s linear infinite;
+      }
+      @keyframes ccm-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
   </head>
   <body>
+    <!-- Loading indicator: tampil sejak awal (inline style, tidak nunggu
+         ../styles.css/font selesai dimuat), disembunyikan oleh app.js
+         begitu widget siap (body.ccm-ready) -->
+    <div id="ccm-loading" aria-hidden="true"></div>
+
     <!-- Toggle Button -->
     <button id="ccm-toggle" aria-label="Open chat menu">
       <svg

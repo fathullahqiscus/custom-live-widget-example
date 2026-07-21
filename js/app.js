@@ -554,6 +554,12 @@
         QiscusLoader.loadScript(appId, channelId, onResult);
       });
     }
+
+    // Semua elemen UI kita sendiri sudah siap (tidak ada kendala load
+    // HTML/CSS/JS) — ganti indikator loading dengan tombol live.
+    // Kegagalan SDK Qiscus (App ID salah, dsb) ditangani terpisah oleh
+    // ErrorScreen di atas tombol ini, bukan oleh indikator loading ini.
+    document.body.classList.add("ccm-ready");
   }
 
   // Jalankan saat DOM ready
