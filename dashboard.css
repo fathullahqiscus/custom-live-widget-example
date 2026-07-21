@@ -318,6 +318,39 @@ body {
   animation: dash-spin 0.7s linear infinite;
 }
 
+.dash-preview-error {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  padding: 0 16px;
+}
+
+.dash-preview-error p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-muted, #64748b);
+}
+
+.dash-preview-error button {
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.dash-preview-overlay.is-error .dash-spinner {
+  display: none;
+}
+
+.dash-preview-overlay.is-error .dash-preview-error {
+  display: flex;
+}
+
 @keyframes dash-spin {
   to {
     transform: rotate(360deg);

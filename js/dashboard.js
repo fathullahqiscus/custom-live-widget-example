@@ -125,22 +125,34 @@
   // ── Iframe preview ───────────────────────────────────────
   function hideOverlay() {
     dom.overlay.classList.remove("is-visible");
+    dom.overlay.classList.remove("is-error");
     if (previewTimeoutId) {
       clearTimeout(previewTimeoutId);
       previewTimeoutId = null;
     }
   }
 
+  function handlePreviewTimeout() {
+    previewTimeoutId = null;
+    dom.overlay.classList.add("is-error");
+  }
+
   function loadPreview(caseId) {
     dom.overlay.classList.add("is-visible");
+    dom.overlay.classList.remove("is-error");
     if (previewTimeoutId) {
       clearTimeout(previewTimeoutId);
     }
     // Fallback: kalau event "load" iframe tidak pernah nyala (koneksi
     // lambat/putus ke omnichannel.qiscus.com, resource diblok, dll),
-    // overlay jangan sampai muter tanpa henti — paksa hilang.
-    previewTimeoutId = setTimeout(hideOverlay, PREVIEW_TIMEOUT_MS);
+    // overlay jangan sampai muter tanpa henti — tampilkan pesan gagal
+    // dengan opsi coba lagi, bukan diam menghilang.
+    previewTimeoutId = setTimeout(handlePreviewTimeout, PREVIEW_TIMEOUT_MS);
     dom.iframe.src = "widget/?case=" + encodeURIComponent(caseId);
+  }
+
+  function retryPreview() {
+    loadPreview(activeCaseId);
   }
 
   // ── Selection + URL sync ─────────────────────────────────
@@ -166,6 +178,11 @@
     dom.overlay = document.getElementById("dash-preview-overlay");
 
     dom.iframe.addEventListener("load", hideOverlay);
+
+    var retryBtn = document.getElementById("dash-preview-retry");
+    if (retryBtn) {
+      retryBtn.addEventListener("click", retryPreview);
+    }
 
     renderPicker();
 

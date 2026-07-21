@@ -12,7 +12,52 @@
   var state = {
     isChatOpen: false,
     hasActivatedChat: false,
+    // "idle" | "loading" | "ready" | "failed" — status load SDK Qiscus,
+    // dipakai supaya tombol chat/toggle tidak diam saja saat SDK gagal.
+    sdkState: "idle",
+    lastAppId: "",
+    lastChannelId: "",
   };
+
+  var SDK_LOAD_TIMEOUT_MS = 10000;
+
+  /**
+   * Ganti teks sementara pada elemen (mis. tombol) lalu kembalikan ke
+   * teks semula setelah durasi tertentu — dipakai untuk feedback ringan
+   * saat SDK masih loading/gagal, supaya tombol tidak terlihat mati.
+   */
+  function flashText(el, text, duration) {
+    if (!el) return;
+    var original = el.getAttribute("data-ccm-original-text");
+    if (original === null) {
+      original = el.textContent;
+      el.setAttribute("data-ccm-original-text", original);
+    }
+    el.textContent = text;
+    clearTimeout(el._ccmFlashTimeout);
+    el._ccmFlashTimeout = setTimeout(function () {
+      el.textContent = el.getAttribute("data-ccm-original-text");
+    }, duration || 1800);
+  }
+
+  /**
+   * Sama seperti flashText tapi untuk atribut (title/aria-label), dipakai
+   * untuk tombol yang cuma berisi ikon (mis. #ccm-toggle).
+   */
+  function flashAttr(el, attr, text, duration) {
+    if (!el) return;
+    var key = "data-ccm-original-" + attr;
+    var original = el.getAttribute(key);
+    if (original === null) {
+      original = el.getAttribute(attr) || "";
+      el.setAttribute(key, original);
+    }
+    el.setAttribute(attr, text);
+    clearTimeout(el._ccmFlashAttrTimeout);
+    el._ccmFlashAttrTimeout = setTimeout(function () {
+      el.setAttribute(attr, el.getAttribute(key));
+    }, duration || 1800);
+  }
 
   // ── DOM references (diisi saat init) ─────────────────────
   var dom = {
@@ -76,7 +121,13 @@
 
     toggle: function () {
       if (state.isChatOpen || state.hasActivatedChat) {
-        QiscusLoader.clickTrigger();
+        var clicked = QiscusLoader.clickTrigger();
+        if (!clicked) {
+          if (state.sdkState === "failed") {
+            QiscusLoader.retry();
+          }
+          flashAttr(dom.toggle, "aria-label", "Menghubungkan...", 1800);
+        }
       } else {
         dom.panel.classList.toggle("open");
       }
@@ -135,6 +186,8 @@
       appIdInput.value = existing.appId;
       channelIdInput.value = existing.channelId;
 
+      var submitBtn = form.querySelector('[type="submit"]');
+
       form.addEventListener("submit", function handler(e) {
         e.preventDefault();
         var appId = appIdInput.value.trim();
@@ -142,9 +195,19 @@
         if (!appId || !channelId) return;
 
         AppIdGate.save(appId, channelId);
-        overlay.classList.remove("open");
         form.removeEventListener("submit", handler);
-        onReady(appId, channelId);
+
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          flashText(submitBtn, "Menghubungkan...", SDK_LOAD_TIMEOUT_MS + 2000);
+        }
+
+        onReady(appId, channelId, function (success) {
+          if (submitBtn) submitBtn.disabled = false;
+          overlay.classList.remove("open");
+          // Kegagalan ditangani oleh ErrorScreen (dipicu dari loadScript),
+          // modal tetap ditutup supaya tidak ada dua sumber pesan error.
+        });
       });
 
       setTimeout(function () {
@@ -157,8 +220,30 @@
   // Halaman gagal-muat, tampil kalau SDK Qiscus gagal di-load atau
   // gagal di-init (mis. App ID salah, koneksi bermasalah).
   var ErrorScreen = {
-    show: function () {
-      document.getElementById("ccm-load-error").classList.add("open");
+    MESSAGES: {
+      timeout:
+        "Widget membutuhkan waktu terlalu lama untuk dimuat. Cek koneksi internet Anda dan coba lagi.",
+      "script-error":
+        "Gagal memuat widget chat. Cek koneksi internet Anda dan coba lagi.",
+      "sdk-missing":
+        "Widget chat gagal disiapkan dengan benar. Silakan muat ulang halaman.",
+      "init-error":
+        "Widget chat gagal diinisialisasi. Periksa kembali App ID & Channel ID Anda.",
+    },
+
+    show: function (reason) {
+      var el = document.getElementById("ccm-load-error");
+      var textEl = el.querySelector("p");
+      if (textEl) {
+        textEl.textContent =
+          (reason && ErrorScreen.MESSAGES[reason]) ||
+          ErrorScreen.MESSAGES["script-error"];
+      }
+      el.classList.add("open");
+    },
+
+    hide: function () {
+      document.getElementById("ccm-load-error").classList.remove("open");
     },
 
     bindEvents: function () {
@@ -267,11 +352,17 @@
     },
 
     /**
-     * Klik trigger button bawaan Qiscus.
+     * Klik trigger button bawaan Qiscus. Return true kalau tombolnya
+     * ditemukan & berhasil diklik, false kalau tidak (supaya pemanggil
+     * bisa kasih feedback, bukan diam saja).
      */
     clickTrigger: function () {
       var btn = document.querySelector(".qcw-trigger-btn");
-      if (btn) btn.click();
+      if (btn) {
+        btn.click();
+        return true;
+      }
+      return false;
     },
 
     /**
@@ -284,6 +375,17 @@
      * PanelController.toggle di atas).
      */
     openChat: function () {
+      if (state.sdkState === "failed") {
+        var chatTitle = document.querySelector("#ccm-chat .ccm-title");
+        flashText(chatTitle, "Gagal memuat, coba lagi...", 2000);
+        QiscusLoader.retry();
+        return;
+      }
+      if (state.sdkState === "loading") {
+        flashText(document.querySelector("#ccm-chat .ccm-title"), "Memuat...", 2000);
+        return;
+      }
+
       state.hasActivatedChat = true;
       PanelController.close();
       document.body.classList.add("ccm-chat-active");
@@ -292,8 +394,14 @@
     /**
      * Load Qiscus SDK script dan inisialisasi widget dengan App ID +
      * Channel ID yang diberikan (dari AppIdGate — localStorage atau popup).
+     * onResult(success) opsional, dipanggil sekali saat proses selesai
+     * (sukses, gagal, atau timeout).
      */
-    loadScript: function (appId, channelId) {
+    loadScript: function (appId, channelId, onResult) {
+      state.sdkState = "loading";
+      state.lastAppId = appId;
+      state.lastChannelId = channelId;
+
       var options = Object.assign({}, QISCUS_OPTIONS, {
         channel_id: channelId,
         widgetCustomCSS: WIDGET_CUSTOM_CSS,
@@ -310,24 +418,60 @@
         },
       };
 
+      var settled = false;
+      function settle(success, reason) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeoutId);
+        if (success) {
+          state.sdkState = "ready";
+        } else {
+          state.sdkState = "failed";
+          ErrorScreen.show(reason);
+        }
+        if (onResult) onResult(success);
+      }
+
+      var timeoutId = setTimeout(function () {
+        settle(false, "timeout");
+      }, SDK_LOAD_TIMEOUT_MS);
+
       var script = document.createElement("script");
       script.type = "text/javascript";
       script.src = QISCUS_SCRIPT_URL;
       script.async = true;
       script.onerror = function () {
-        ErrorScreen.show();
+        settle(false, "script-error");
       };
       script.onload = script.onreadystatechange = function () {
+        if (settled) return;
+        if (typeof window.Qismo !== "function") {
+          settle(false, "sdk-missing");
+          return;
+        }
         try {
           new Qismo(appId, params);
           QiscusLoader.attachCustomCSS();
+          settle(true);
         } catch (err) {
-          ErrorScreen.show();
+          settle(false, "init-error");
         }
       };
 
       var firstScript = document.getElementsByTagName("script")[0];
       firstScript.parentNode.insertBefore(script, firstScript);
+    },
+
+    /**
+     * Coba muat ulang SDK setelah kegagalan sebelumnya, pakai App ID /
+     * Channel ID terakhir yang diketahui. Dijaga supaya tidak dobel
+     * retry selagi masih loading.
+     */
+    retry: function () {
+      if (state.sdkState === "loading") return;
+      if (!state.lastAppId || !state.lastChannelId) return;
+      ErrorScreen.hide();
+      QiscusLoader.loadScript(state.lastAppId, state.lastChannelId);
     },
   };
 
@@ -360,8 +504,8 @@
     if (existing.appId && existing.channelId) {
       QiscusLoader.loadScript(existing.appId, existing.channelId);
     } else {
-      AppIdGate.prompt(function (appId, channelId) {
-        QiscusLoader.loadScript(appId, channelId);
+      AppIdGate.prompt(function (appId, channelId, onResult) {
+        QiscusLoader.loadScript(appId, channelId, onResult);
       });
     }
   }
