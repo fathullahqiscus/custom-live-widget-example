@@ -28,6 +28,24 @@
   var READY_CHECK_TIMEOUT_MS = 300;
   var QISCUS_READY_SELECTOR = ".qcw-trigger-btn, #qcw-welcome-iframe";
 
+  // Pesan spesifik per body error backend Qiscus (mis.
+  // {"errors":"channel is not found","status":404}), supaya user tahu
+  // persis App ID atau Channel ID yang salah, bukan cuma pesan generik.
+  // Key harus lowercase, dicocokkan case-insensitive terhadap field
+  // "errors" dari response.
+  var BACKEND_ERROR_DETAILS = {
+    "channel is not found": {
+      message:
+        "Channel ID tidak ditemukan di akun Qiscus Anda. Periksa kembali Channel ID lalu coba lagi.",
+      changeIdLabel: "Ganti Channel ID",
+    },
+    "app is not found": {
+      message:
+        "App ID tidak ditemukan di akun Qiscus Anda. Periksa kembali App ID lalu coba lagi.",
+      changeIdLabel: "Ganti App ID",
+    },
+  };
+
   /**
    * Ganti teks sementara pada elemen (mis. tombol) lalu kembalikan ke
    * teks semula setelah durasi tertentu — dipakai untuk feedback ringan
@@ -240,13 +258,18 @@
         "Widget tidak merespons — App ID atau Channel ID kemungkinan salah atau tidak ditemukan di akun Qiscus Anda. Periksa kembali lalu coba lagi.",
     },
 
-    show: function (reason) {
+    show: function (reason, detail) {
       var el = document.getElementById("ccm-load-error");
       var textEl = el.querySelector("p");
       if (textEl) {
         textEl.textContent =
+          (detail && detail.message) ||
           (reason && ErrorScreen.MESSAGES[reason]) ||
           ErrorScreen.MESSAGES["script-error"];
+      }
+      var changeIdBtn = document.getElementById("ccm-error-change-appid");
+      if (changeIdBtn) {
+        changeIdBtn.textContent = (detail && detail.changeIdLabel) || "Ganti App ID";
       }
       el.classList.add("open");
     },
@@ -268,6 +291,72 @@
           AppIdGate.clear();
           window.location.reload();
         });
+    },
+  };
+
+  // ── BackendErrorWatcher ──────────────────────────────────
+  // App ID/Channel ID yang salah tidak melempar exception di new Qismo()
+  // — SDK cuma memanggil API Qiscus, dapat 404, lalu diam saja. Untuk
+  // tahu ALASAN persisnya (mis. "channel is not found" vs "app is not
+  // found"), intercept fetch & XHR sekali di awal supaya body error asli
+  // dari response API tertangkap dan bisa ditampilkan ke user.
+  var BackendErrorWatcher = {
+    lastError: null,
+    installed: false,
+
+    reset: function () {
+      BackendErrorWatcher.lastError = null;
+    },
+
+    inspect: function (text) {
+      if (!text) return;
+      try {
+        var data = JSON.parse(text);
+        if (data && typeof data.errors === "string") {
+          BackendErrorWatcher.lastError = data.errors.trim();
+        }
+      } catch (e) {
+        // Bukan JSON / bukan response error kita — abaikan.
+      }
+    },
+
+    install: function () {
+      if (BackendErrorWatcher.installed) return;
+      BackendErrorWatcher.installed = true;
+
+      if (window.fetch) {
+        var originalFetch = window.fetch;
+        window.fetch = function () {
+          return originalFetch.apply(this, arguments).then(function (res) {
+            try {
+              res
+                .clone()
+                .text()
+                .then(BackendErrorWatcher.inspect)
+                .catch(function () {});
+            } catch (e) {}
+            return res;
+          });
+        };
+      }
+
+      var OriginalXHR = window.XMLHttpRequest;
+      if (OriginalXHR) {
+        var originalOpen = OriginalXHR.prototype.open;
+        OriginalXHR.prototype.open = function () {
+          this.addEventListener("load", function () {
+            BackendErrorWatcher.inspect(this.responseText);
+          });
+          return originalOpen.apply(this, arguments);
+        };
+      }
+    },
+
+    /** Detail pesan/tombol yang cocok dengan error terakhir, kalau ada. */
+    getDetail: function () {
+      var err = BackendErrorWatcher.lastError;
+      if (!err) return null;
+      return BACKEND_ERROR_DETAILS[err.toLowerCase()] || null;
     },
   };
 
@@ -411,6 +500,9 @@
       state.lastAppId = appId;
       state.lastChannelId = channelId;
 
+      BackendErrorWatcher.install();
+      BackendErrorWatcher.reset();
+
       var options = Object.assign({}, QISCUS_OPTIONS, {
         channel_id: channelId,
         widgetCustomCSS: WIDGET_CUSTOM_CSS,
@@ -444,7 +536,8 @@
           state.sdkState = "ready";
         } else {
           state.sdkState = "failed";
-          ErrorScreen.show(reason);
+          var detail = reason === "backend-error" ? BackendErrorWatcher.getDetail() : null;
+          ErrorScreen.show(reason, detail);
         }
         if (onResult) onResult(success);
       }
