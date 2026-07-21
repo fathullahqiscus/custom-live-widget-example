@@ -25,7 +25,7 @@
   // sebelum menganggap sdkState "ready" — App ID/Channel ID salah tidak
   // melempar exception, backend cuma menolak secara async (404), jadi UI
   // Qiscus tidak pernah muncul.
-  var READY_CHECK_TIMEOUT_MS = 8000;
+  var READY_CHECK_TIMEOUT_MS = 300;
   var QISCUS_READY_SELECTOR = ".qcw-trigger-btn, #qcw-welcome-iframe";
 
   /**
