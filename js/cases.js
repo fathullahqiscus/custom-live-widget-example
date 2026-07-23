@@ -523,6 +523,51 @@ var CASES = [
       },
     ],
   },
+  {
+    id: "q12-hide-agent-name",
+    categoryId: "chat-room-style",
+    label: "Q12 · Sembunyikan Nama Agent",
+    tagline: "Nama agent yang membalas tidak ditampilkan ke customer",
+    description: [
+      "Default platform: nama agent yang membalas selalu tampil di atas/dekat bubble pesannya",
+      "Tidak ada setting di dashboard Qiscus untuk mematikan ini — perlu custom CSS untuk menyembunyikannya",
+      "Bubble pesan agent tetap tampil normal, hanya label namanya yang disembunyikan",
+    ],
+    overrides: {
+      loginHeader: null,
+      enableLoginBypass: false,
+      extraCss:
+        ".qcw-comment--other .qcw-comment__sender-name," +
+        " .qcw-comment-sender-name," +
+        " .comment--other .comment__sender-name," +
+        " .comment__username," +
+        " div[class*=\"comment--other\"] div[class*=\"sender-name\"]," +
+        " div[class*=\"comment\"][class*=\"sender-name\"]," +
+        " div[class*=\"comment\"][class*=\"username\"]" +
+        " { display: none !important; }",
+    },
+    snippets: [
+      {
+        title: "Custom CSS — sembunyikan nama agent di bubble chat",
+        code:
+          "/* Label nama agent di atas bubble pesan (bukan bubble-nya) */\n" +
+          ".qcw-comment--other .qcw-comment__sender-name,\n" +
+          ".comment--other .comment__sender-name,\n" +
+          ".comment__username {\n" +
+          "  display: none !important;\n" +
+          "}",
+      },
+      {
+        title: "Catatan",
+        code:
+          "• Class name persis bisa berbeda tergantung versi SDK — kalau\n" +
+          "  nama masih tampil, cek nama class-nya lewat inspect element\n" +
+          "  lalu sesuaikan selector di atas.\n" +
+          "• Ini murni kosmetik (CSS): nama agent tetap tercatat & terlihat\n" +
+          "  di dashboard Omnichannel, hanya disembunyikan dari sisi customer.",
+      },
+    ],
+  },
 ];
 
 // ── Helper: resolve case dari id, fallback ke "default" ──────
