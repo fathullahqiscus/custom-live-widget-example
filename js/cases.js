@@ -527,25 +527,26 @@ var CASES = [
     id: "q12-hide-agent-name",
     categoryId: "chat-room-style",
     label: "Q12 · Sembunyikan Nama Agent",
-    tagline: "Nama agent yang membalas tidak ditampilkan ke customer",
+    tagline: "Nama & avatar agent yang membalas tidak ditampilkan ke customer",
     description: [
-      "Default platform: nama agent yang membalas selalu tampil di atas/dekat bubble pesannya",
+      "Default platform: nama dan foto avatar agent yang membalas selalu tampil di atas/dekat bubble pesannya",
       "Tidak ada setting di dashboard Qiscus untuk mematikan ini — perlu custom CSS untuk menyembunyikannya",
-      "Bubble pesan agent tetap tampil normal, hanya label namanya yang disembunyikan",
+      "Bubble pesan agent tetap tampil normal, hanya label nama & avatarnya yang disembunyikan",
     ],
     overrides: {
       loginHeader: null,
       enableLoginBypass: false,
       extraCss:
-        ".qcw-comment__username" +
+        ".qcw-comment__username, .qcw-avatar" +
         " { display: none !important; }",
     },
     snippets: [
       {
-        title: "Custom CSS — sembunyikan nama agent di bubble chat",
+        title: "Custom CSS — sembunyikan nama & avatar agent di bubble chat",
         code:
-          "/* Label nama agent (mis. \"Support\") di atas bubble pesan */\n" +
-          ".qcw-comment__username {\n" +
+          "/* Label nama (mis. \"Support\") & foto avatar di atas bubble pesan */\n" +
+          ".qcw-comment__username,\n" +
+          ".qcw-avatar {\n" +
           "  display: none !important;\n" +
           "}",
       },
