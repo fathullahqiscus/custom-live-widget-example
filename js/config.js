@@ -190,14 +190,19 @@ var WIDGET_CUSTOM_CSS =
   (LOGIN_HEADER.bannerImageUrl
     ? /* Mode banner: sembunyikan teks judul & logo default, tampilkan gambar */
       " .qismo-login-form__header { display: none !important; }" +
-      " .qcw-login-avatar { width: 100% !important; height: auto !important;" +
-      "   margin: 0 !important; display: block !important; }" +
+      /* full-bleed: keluar dari padding kiri/kanan parent manapun (100vw
+         relatif ke iframe form login, bukan ke parent yang ber-padding)
+         supaya gambar benar-benar menempel ke tepi, tanpa margin */
+      " .qcw-login-avatar { position: relative !important; left: 50% !important;" +
+      "   width: 100vw !important; margin-left: -50vw !important; margin-right: 0 !important;" +
+      "   margin-top: 0 !important; margin-bottom: 0 !important; height: auto !important;" +
+      "   display: block !important; }" +
       " .qcw-login-avatar img { display: none !important; }" +
       " .qcw-login-avatar::after { content: \"\"; display: block; width: 100%;" +
       "   aspect-ratio: " + LOGIN_HEADER.bannerAspectRatio + ";" +
       "   background-image: url('" + LOGIN_HEADER.bannerImageUrl + "');" +
       "   background-size: cover !important; background-position: center !important;" +
-      "   border-radius: 12px !important; }"
+      "   border-radius: 0 !important; }"
     : "") +
   /* Background wrapper — putih */
   " .qcw-chat," +
