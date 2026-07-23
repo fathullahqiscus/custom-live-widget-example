@@ -537,41 +537,21 @@ var CASES = [
       loginHeader: null,
       enableLoginBypass: false,
       extraCss:
-        ".qcw-comment--other .qcw-comment__sender-name," +
-        " .qcw-comment-sender-name," +
-        " .comment--other .comment__sender-name," +
-        " .comment__username," +
-        " div[class*=\"comment--other\"] div[class*=\"sender-name\"]," +
-        " div[class*=\"comment-other\"] div[class*=\"sender-name\"]," +
-        " div[class*=\"comment\"][class*=\"sender-name\"]," +
-        " div[class*=\"comment\"][class*=\"username\"]," +
-        " div[class*=\"comment--other\"] [class*=\"sender\"]," +
-        " div[class*=\"comment--other\"] [class*=\"author\"]," +
-        " div[class*=\"comment--other\"] [class*=\"username\"]," +
-        " div[class*=\"comment--other\"] [class*=\"name\"]," +
-        " div[class*=\"comment-other\"] [class*=\"sender\"]," +
-        " div[class*=\"comment-other\"] [class*=\"author\"]," +
-        " div[class*=\"comment-other\"] [class*=\"username\"]," +
-        " div[class*=\"comment-other\"] [class*=\"name\"]" +
+        ".qcw-comment__username" +
         " { display: none !important; }",
     },
     snippets: [
       {
         title: "Custom CSS — sembunyikan nama agent di bubble chat",
         code:
-          "/* Label nama agent di atas bubble pesan (bukan bubble-nya) */\n" +
-          ".qcw-comment--other .qcw-comment__sender-name,\n" +
-          ".comment--other .comment__sender-name,\n" +
-          ".comment__username {\n" +
+          "/* Label nama agent (mis. \"Support\") di atas bubble pesan */\n" +
+          ".qcw-comment__username {\n" +
           "  display: none !important;\n" +
           "}",
       },
       {
         title: "Catatan",
         code:
-          "• Class name persis bisa berbeda tergantung versi SDK — kalau\n" +
-          "  nama masih tampil, cek nama class-nya lewat inspect element\n" +
-          "  lalu sesuaikan selector di atas.\n" +
           "• Ini murni kosmetik (CSS): nama agent tetap tercatat & terlihat\n" +
           "  di dashboard Omnichannel, hanya disembunyikan dari sisi customer.",
       },
