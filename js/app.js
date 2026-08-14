@@ -508,6 +508,13 @@
         widgetCustomCSS: WIDGET_CUSTOM_CSS,
       });
 
+      // DEBUG: log semua postMessage dari iframe Qiscus untuk menemukan event "resolved"
+      window.addEventListener("message", function (e) {
+        if (e.data && e.data.event_name) {
+          console.log("[qismo-event]", e.data.event_name, e.data);
+        }
+      });
+
       var params = {
         options: options,
         onMaximize: function () {
@@ -516,6 +523,9 @@
         },
         onMinimize: function () {
           state.isChatOpen = false;
+        },
+        onRoomChanged: function (room) {
+          console.log("[qismo-room-changed]", room);
         },
       };
 
