@@ -622,9 +622,10 @@
             if (qismoInstance && typeof qismoInstance.logout === "function") {
               qismoInstance.logout();
             }
-            state.isChatOpen = false;
-            state.hasActivatedChat = false;
-            document.body.classList.remove("ccm-chat-active");
+            // logout() tidak mereset visual widget Qiscus yang sudah terender
+            // di iframe-nya — reload halaman adalah cara paling andal untuk
+            // memastikan widget mulai fresh dari form pengisian data.
+            window.location.reload();
             break;
           }
         }
