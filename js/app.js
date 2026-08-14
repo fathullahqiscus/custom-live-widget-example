@@ -508,13 +508,6 @@
         widgetCustomCSS: WIDGET_CUSTOM_CSS,
       });
 
-      // DEBUG: log semua postMessage dari iframe Qiscus untuk menemukan event "resolved"
-      window.addEventListener("message", function (e) {
-        if (e.data && e.data.event_name) {
-          console.log("[qismo-event]", e.data.event_name, e.data);
-        }
-      });
-
       var params = {
         options: options,
         onMaximize: function () {
@@ -523,9 +516,6 @@
         },
         onMinimize: function () {
           state.isChatOpen = false;
-        },
-        onRoomChanged: function (room) {
-          console.log("[qismo-room-changed]", room);
         },
       };
 
@@ -599,8 +589,9 @@
           return;
         }
         try {
-          new Qismo(appId, params);
+          var qismoInstance = new Qismo(appId, params);
           QiscusLoader.attachCustomCSS();
+          QiscusLoader.watchForRoomResolve(qismoInstance);
           watchForReady();
         } catch (err) {
           settle(false, "init-error");
@@ -609,6 +600,35 @@
 
       var firstScript = document.getElementsByTagName("script")[0];
       firstScript.parentNode.insertBefore(script, firstScript);
+    },
+
+    /**
+     * Dengarkan event postMessage dari Qiscus SDK. Ketika room di-resolve
+     * oleh admin, SDK mengirim pesan sistem bertipe "system_event" via
+     * event "new-messages". Deteksi ini dipakai untuk otomatis logout +
+     * reset widget ke form pengisian data awal — tanpa perlu user refresh.
+     */
+    watchForRoomResolve: function (qismoInstance) {
+      window.addEventListener("message", function (e) {
+        if (!e.data || e.data.event_name !== "new-messages") return;
+        var messages = e.data.data || [];
+        for (var i = 0; i < messages.length; i++) {
+          var msg = messages[i];
+          if (
+            msg.type === "system_event" &&
+            msg.message &&
+            msg.message.toLowerCase().indexOf("resolved") !== -1
+          ) {
+            if (qismoInstance && typeof qismoInstance.logout === "function") {
+              qismoInstance.logout();
+            }
+            state.isChatOpen = false;
+            state.hasActivatedChat = false;
+            document.body.classList.remove("ccm-chat-active");
+            break;
+          }
+        }
+      });
     },
 
     /**
