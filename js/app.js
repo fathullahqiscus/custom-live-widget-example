@@ -619,12 +619,9 @@
             msg.message &&
             msg.message.toLowerCase().indexOf("resolved") !== -1
           ) {
-            if (qismoInstance && typeof qismoInstance.logout === "function") {
-              qismoInstance.logout();
-            }
-            // logout() tidak mereset visual widget Qiscus yang sudah terender
-            // di iframe-nya — reload halaman adalah cara paling andal untuk
-            // memastikan widget mulai fresh dari form pengisian data.
+            // Hapus hanya sesi user Qiscus — jangan pakai qismoInstance.logout()
+            // karena itu ikut menghapus App ID & Channel ID kita di localStorage.
+            localStorage.removeItem("qismo-widget");
             window.location.reload();
             break;
           }
