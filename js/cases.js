@@ -232,6 +232,131 @@ var CASES = [
     ],
   },
   {
+    id: "q13-custom-button-bypass",
+    categoryId: "login-behavior",
+    label: "Q13 · Tombol Custom \"Hubungi CS\" + Bypass Login",
+    tagline: "Tombol bawaan disembunyikan, chat dibuka dari tombol milik dashboard client — user login langsung masuk chat",
+    description: [
+      "Kebutuhan: client punya dashboard/web app dengan user yang SUDAH login, dan ingin live chat dibuka dari tombol mereka sendiri (mis. \"Hubungi CS\" di navbar), bukan dari bubble bawaan Qiscus di pojok kanan bawah",
+      "Langkah 1 — Sembunyikan tombol bawaan: CSS .qcw-trigger-btn { display: none !important; } di halaman client (BUKAN lewat widgetCustomCSS, karena tombol ini ada di halaman utama, bukan di iframe Qiscus)",
+      "Langkah 2 — Bypass form login: tulis data user yang login ke localStorage key \"qismo-widget\" SEBELUM script qismo-v5.js di-load. Beda dengan Q4: data di-overwrite kalau unique_id yang tersimpan berbeda dengan user yang sedang login, supaya ganti akun di browser yang sama tidak mewarisi chat user sebelumnya",
+      "Langkah 3 — Load widget seperti biasa (new Qismo(APP_ID, { options: { channel_id } }))",
+      "Langkah 4 — Tombol custom memanggil .click() pada .qcw-trigger-btn. Tombol bawaan tetap ada di DOM (hanya tidak terlihat), jadi .click() tetap berfungsi. Karena user sudah di-bypass, klik ini langsung membuka/menutup chat room",
+      "Demo di preview ini: menu custom di kanan bawah berperan sebagai tombol \"Hubungi CS\" — tombol bawaan Qiscus disembunyikan, dan user demo langsung masuk chat tanpa form",
+    ],
+    overrides: {
+      loginHeader: null,
+      enableLoginBypass: true,
+    },
+    snippets: [
+      {
+        title: "1 · HTML + CSS — tombol custom & sembunyikan tombol bawaan",
+        code:
+          "<style>\n" +
+          "  /* Sembunyikan tombol bubble bawaan widget Qiscus.\n" +
+          "     Taruh di CSS halaman client (bukan widgetCustomCSS),\n" +
+          "     karena .qcw-trigger-btn dirender di halaman utama. */\n" +
+          "  .qcw-trigger-btn { display: none !important; }\n\n" +
+          "  /* Style tombol custom — sesuaikan dengan desain dashboard */\n" +
+          "  #btn-hubungi-cs {\n" +
+          "    padding: 10px 20px;\n" +
+          "    background: #2563eb;\n" +
+          "    color: #fff;\n" +
+          "    border: none;\n" +
+          "    border-radius: 6px;\n" +
+          "    cursor: pointer;\n" +
+          "  }\n" +
+          "</style>\n\n" +
+          "<!-- Letakkan di mana saja: navbar, sidebar, halaman bantuan, dll. -->\n" +
+          "<button id=\"btn-hubungi-cs\" type=\"button\">Hubungi CS</button>",
+      },
+      {
+        title: "2 · Bypass login — tulis data user ke localStorage (SEBELUM load widget)",
+        code:
+          "// Data user yang sedang login di dashboard.\n" +
+          "// WAJIB diisi dinamis dari session/backend — JANGAN hardcode.\n" +
+          "var currentUser = {\n" +
+          "  unique_id: \"user@example.com\",   // email / user ID, unik per user\n" +
+          "  display_name: \"Nama User\",\n" +
+          "};\n\n" +
+          "try {\n" +
+          "  var stored = JSON.parse(localStorage.getItem(\"qismo-widget\") || \"null\");\n\n" +
+          "  // Tulis kalau belum ada, ATAU kalau yang tersimpan milik user lain\n" +
+          "  // (mis. ganti akun di browser yang sama).\n" +
+          "  if (!stored || stored.unique_id !== currentUser.unique_id) {\n" +
+          "    localStorage.setItem(\"qismo-widget\", JSON.stringify({\n" +
+          "      unique_id: currentUser.unique_id,\n" +
+          "      display_name: currentUser.display_name,\n" +
+          "      // opsional — info tambahan yang terlihat agent:\n" +
+          "      // extra_fields: JSON.stringify([{ key: \"company\", value: \"...\" }]),\n" +
+          "    }));\n" +
+          "  }\n" +
+          "} catch (e) {\n" +
+          "  // localStorage bisa diblokir (private mode / setting browser)\n" +
+          "  // → widget tetap jalan, hanya form login yang akan tampil.\n" +
+          "  console.error(\"Gagal set data qismo-widget:\", e);\n" +
+          "}",
+      },
+      {
+        title: "3 · Load widget Qiscus",
+        code:
+          "document.addEventListener(\"DOMContentLoaded\", function () {\n" +
+          "  var s = document.createElement(\"script\");\n" +
+          "  s.type = \"text/javascript\";\n" +
+          "  s.src = \"https://omnichannel.qiscus.com/js/qismo-v5.js\";\n" +
+          "  s.async = true;\n" +
+          "  s.onload = s.onreadystatechange = function () {\n" +
+          "    new Qismo(\"YOUR_APP_ID\", {\n" +
+          "      options: {\n" +
+          "        channel_id: YOUR_CHANNEL_ID,\n" +
+          "        mobileBreakPoint: 400,\n" +
+          "        extra_fields: [],\n" +
+          "        baseUrl: \"https://omnichannel.qiscus.com\",\n" +
+          "        qismoIframeUrl: \"https://omnichannel.qiscus.com\",\n" +
+          "      },\n" +
+          "    });\n" +
+          "  };\n" +
+          "  var t = document.getElementsByTagName(\"script\")[0];\n" +
+          "  t.parentNode.insertBefore(s, t);\n" +
+          "});",
+      },
+      {
+        title: "4 · Tombol custom membuka live chat",
+        code:
+          "// Taruh di dalam handler DOMContentLoaded yang sama (langkah 3).\n" +
+          "document.getElementById(\"btn-hubungi-cs\").addEventListener(\"click\", function () {\n" +
+          "  // Tombol bawaan hanya disembunyikan (display:none), masih ada di DOM,\n" +
+          "  // jadi .click() tetap memicu buka/tutup chat room.\n" +
+          "  var trigger = document.querySelector(\".qcw-trigger-btn\");\n" +
+          "  if (trigger) {\n" +
+          "    trigger.click();\n" +
+          "  } else {\n" +
+          "    // Script qismo-v5.js belum selesai load (async).\n" +
+          "    console.warn(\"Widget Qiscus belum siap, coba lagi sebentar.\");\n" +
+          "  }\n" +
+          "});",
+      },
+      {
+        title: "Checklist & catatan penting",
+        code:
+          "• URUTAN WAJIB: localStorage \"qismo-widget\" diisi SEBELUM qismo-v5.js\n" +
+          "  di-load. Kalau terbalik, widget sudah terlanjur menampilkan form login.\n" +
+          "• currentUser harus dinamis dari sesi login dashboard. Hardcode = semua\n" +
+          "  user masuk ke room chat yang sama.\n" +
+          "• Saat user logout dari dashboard, panggil:\n" +
+          "    localStorage.removeItem(\"qismo-widget\");\n" +
+          "  supaya user berikutnya di browser yang sama tidak melihat chat lama.\n" +
+          "• Tombol custom bisa diklik sebelum widget siap (script async). Untuk UX\n" +
+          "  lebih baik: disable tombol dulu, lalu enable saat .qcw-trigger-btn muncul\n" +
+          "  (cek berkala / MutationObserver), atau tampilkan pesan \"memuat...\".\n" +
+          "• .qcw-trigger-btn berfungsi toggle: klik pertama membuka chat room,\n" +
+          "  klik berikutnya menutup/minimize.\n" +
+          "• Ganti YOUR_APP_ID & YOUR_CHANNEL_ID dengan App ID dan Channel ID\n" +
+          "  dari halaman integrasi Qiscus Widget di dashboard Omnichannel.",
+      },
+    ],
+  },
+  {
     id: "q5-extra-fields",
     categoryId: "login-behavior",
     label: "Q5 · Field Tambahan di Form Login",
