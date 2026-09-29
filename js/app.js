@@ -149,8 +149,14 @@
       // tanpa menu channel. User sudah di-bypass, jadi klik trigger
       // Qiscus langsung membuka room (tanpa form login).
       if (ACTIVE_CASE.overrides.directChat && !state.hasActivatedChat) {
-        QiscusLoader.openChat();
-        if (!state.hasActivatedChat) return; // SDK belum siap / gagal
+        if (state.sdkState !== "ready") {
+          QiscusLoader.openChat(); // tampilkan "Memuat..." / retry
+          return;
+        }
+        // Tandai aktif TANPA class ccm-chat-active, supaya teaser
+        // "Hello There, Welcome to Qiscus!" tetap tersembunyi.
+        state.hasActivatedChat = true;
+        PanelController.close();
       }
       if (state.isChatOpen || state.hasActivatedChat) {
         var clicked = QiscusLoader.clickTrigger();
