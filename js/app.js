@@ -145,6 +145,13 @@
     },
 
     toggle: function () {
+      // Case "directChat" (Q13): tombol langsung membuka chat room,
+      // tanpa menu channel. User sudah di-bypass, jadi klik trigger
+      // Qiscus langsung membuka room (tanpa form login).
+      if (ACTIVE_CASE.overrides.directChat && !state.hasActivatedChat) {
+        QiscusLoader.openChat();
+        if (!state.hasActivatedChat) return; // SDK belum siap / gagal
+      }
       if (state.isChatOpen || state.hasActivatedChat) {
         var clicked = QiscusLoader.clickTrigger();
         if (!clicked) {

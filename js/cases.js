@@ -242,11 +242,12 @@ var CASES = [
       "Langkah 2 — Bypass form login: tulis data user yang login ke localStorage key \"qismo-widget\" SEBELUM script qismo-v5.js di-load. Beda dengan Q4: data di-overwrite kalau unique_id yang tersimpan berbeda dengan user yang sedang login, supaya ganti akun di browser yang sama tidak mewarisi chat user sebelumnya",
       "Langkah 3 — Load widget seperti biasa (new Qismo(APP_ID, { options: { channel_id } }))",
       "Langkah 4 — Tombol custom memanggil .click() pada .qcw-trigger-btn. Tombol bawaan tetap ada di DOM (hanya tidak terlihat), jadi .click() tetap berfungsi. Karena user sudah di-bypass, klik ini langsung membuka/menutup chat room",
-      "Demo di preview ini: menu custom di kanan bawah berperan sebagai tombol \"Hubungi CS\" — tombol bawaan Qiscus disembunyikan, dan user demo langsung masuk chat tanpa form",
+      "Demo di preview ini: tombol bulat di kanan bawah berperan sebagai tombol \"Hubungi CS\" — sekali klik langsung membuka chat room (tanpa menu channel, tanpa form login)",
     ],
     overrides: {
       loginHeader: null,
       enableLoginBypass: true,
+      directChat: true,
     },
     snippets: [
       {
